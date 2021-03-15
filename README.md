@@ -7,9 +7,13 @@ I do this by using the smart UV project.
 
 Step 1:
 Open UV editor and get seams for islands
-Step 2: 
+
+Step 2:
+
 in edit mode
+
 select seams and mark sharp
+
 Step 3: 
 in obect mode
 Run the edge split modifier on sharp only
