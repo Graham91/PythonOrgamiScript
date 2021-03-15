@@ -9,9 +9,7 @@ Step 1:
 Open UV editor and get seams for islands
 
 Step 2:
-
 in edit mode
-
 select seams and mark sharp
 
 Step 3: 
