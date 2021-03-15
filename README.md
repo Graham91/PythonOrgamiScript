@@ -2,6 +2,7 @@
 This is just a work flow enhancing script for the tiny monster project. 
 In order for this to work you will need the Origamify addon installed. 
 https://github.com/aconz2/blender-addon-origamify
+
 You will need to break up your object in to multiple objects
 I do this by using the smart UV project.
 
