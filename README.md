@@ -15,9 +15,11 @@ select seams and mark sharp
 Step 3: 
 in obect mode
 Run the edge split modifier on sharp only
+
 Step 4: 
 In edit mode
 seperate By loose parts
+
 Step 5: 
 In object mode 
 ReName the initial object by adding a .999 to it
