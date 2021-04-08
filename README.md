@@ -26,6 +26,22 @@ seperate By loose parts
 
 Step 5: 
 In object mode 
-ReName the initial object by adding a .999 to it
+ReName the initial object by adding a .999 or anynumber not used to it
 
 You can now run script with nothing selected.
+
+script runs as follows at this point
+1. run findgreatestLength
+2. undo 
+3. plug longest length into new test and run that 
+4. using outliner command click each obect and then drag to desired location on XY plane
+5. run parentandunparent 
+6. run raising script 
+7. run add dynamicpaint
+8. add plane to cover main area
+9. add material to plane and all faces
+10. UV project all faces at the same time
+11. make material a new texture
+12. make plane dynamic paint canvas
+13. bake image set with texture as intial color and using UVmap
+14. use image set as new material
