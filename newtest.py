@@ -52,10 +52,11 @@ def edge_line_segments(bm, edges=[], tol_angle=0):
 
 scene = bpy.context.scene
 
-foo_objs2 = [obj for obj in bpy.data.objects if obj.name.startswith("Icosphere")]
+foo_objs2 = [obj for obj in bpy.data.objects if obj.name.startswith("chick")]
 
 objectHeightList = []
 newNameList = []
+errorfixer = []
 
 class Obj:
   def __init__(self, name, height):
@@ -79,8 +80,18 @@ for x in objectHeightList:
     print(x.height) 
     
 print(newNameList)
-framenumber = 150
-beginframe = 0 
+longestDistance = 222
+multipler = 1 
+shiftFrame = longestDistance * multipler
+framenumber = 150 + shiftFrame
+beginframe = 0 + shiftFrame
+centralobjectarray = []
+centralHeightArray = []
+shiftframe2 = 0
+
+bpy.context.scene['beginFrame'] = beginframe
+bpy.context.scene['Multipler'] = multipler
+
 print("initial compute done")
 for index, booger in enumerate(newNameList):
   bpy.data.objects[booger].select_set(True)
@@ -103,7 +114,10 @@ for index, booger in enumerate(newNameList):
 
     #get all plane names in unfolded object
     foo_objs = [obj.name for obj in scene.objects if obj.name.startswith(object_name)]
+    newNamingObject = foo_objs[0]
+    
 
+    
     #select central plane
     bpy.data.objects[foo_objs[0]].select_set(True)
 
@@ -128,7 +142,9 @@ for index, booger in enumerate(newNameList):
     
   else:
     o2 = selectedObject
-      
+    newNamingObject = o2.name
+    o2.keyframe_insert(data_path='rotation_euler', frame=(framenumber))
+  centralobjectarray.append(newNamingObject)    
   framenumber += 3
   def scale_from_vector(v):
       mat = Matrix.Identity(4)
@@ -162,63 +178,49 @@ for index, booger in enumerate(newNameList):
 
   #move plane to base
   o2.location = (0,0, height)
+  if objData > 1:
+    for object in foo_objs:
+      bpy.data.objects[object].select_set(True)
+    print(foo_objs)
+    bpy.ops.object.duplicate()
+    objectstring = foo_objs[0]+ ".001"
+    print(objectstring)
+    some_obj = bpy.data.objects[objectstring]
+    bpy.context.view_layer.objects.active = some_obj
+    bpy.ops.object.join()
 
-  for object in foo_objs:
-    bpy.data.objects[object].select_set(True)
-  print(foo_objs)
-  bpy.ops.object.duplicate()
-  objectstring = foo_objs[0]+ ".001"
-  print(objectstring)
-  some_obj = bpy.data.objects[objectstring]
-  bpy.context.view_layer.objects.active = some_obj
-  bpy.ops.object.join()
-
-  bpy.ops.object.mode_set(mode='EDIT')
-  bpy.ops.mesh.select_all(action='SELECT')
-  bpy.ops.mesh.remove_doubles()
-  bpy.ops.mesh.dissolve_faces()
-
-  #gets Length of path for Laser speed
-  context = bpy.context
-  ob = context.object
-  me = ob.data
-  bm = bmesh.from_edit_mesh(me)    
-
-  perimeter = [e for e in bm.edges if e.is_boundary]  
-  ret = edge_line_segments(bm, edges=perimeter, tol_angle=radians(5))
-  segments = [(sum(e.calc_length() for e in s), s)
-        for s in ret["segments"]]
-  segments.sort(key=lambda s: s[0])
-  #pathlength
-  segmentsnumber = 0
-  #compute Path length
-  for i, (length, edges) in enumerate(segments):
-
-     for e in edges:
-        e.select = i == len(segments) - 1 
-        segmentsnumber = e.calc_length() + segmentsnumber
-        print(segmentsnumber)
-
-  #path length after computation        
-  print(segmentsnumber)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles()
+    bpy.ops.mesh.dissolve_faces()
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+  else: 
+    C = bpy.context
+    src_obj = bpy.data.objects[booger]
+    new_obj = src_obj.copy()
+    new_obj.data = src_obj.data.copy()
+    new_obj.name = booger + "111"
+    C.collection.objects.link(new_obj)
+    objectstring = new_obj.name
   #return to object mode       
-  bpy.ops.object.mode_set(mode='OBJECT')
+  
   pathobject = bpy.ops.object.data
   print(pathobject)
-  bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-  bpy.ops.object.convert(target='CURVE')
+  
+
   #grab curve object
   curve_obj = bpy.data.objects[objectstring]
+ 
   #duration
-  pathduration = 15 * segmentsnumber
-  #set curve path duration
-  curve_obj.data.path_duration = pathduration
+  
   #reNamecurveobject
   number = str(index)
   zfilledNumber = number.zfill(4)
   curveName = "Curve" + zfilledNumber
   curve_obj.name = curveName
-
+  errorfixer.append(curveName)
+  errorfixer.append(booger)
   bpy.ops.object.select_all(action='DESELECT')
 
   objects = bpy.data.objects
@@ -226,25 +228,34 @@ for index, booger in enumerate(newNameList):
 
   b.parent = o2
   b.matrix_parent_inverse = o2.matrix_world.inverted()
-  for object in foo_objs:
-     bpy.data.objects[object].select_set(True)
+  if objData > 1:
+    for object in foo_objs:
+       bpy.data.objects[object].select_set(True)
+  else:
+    bpy.data.objects[booger].select_set(True)
+
     
-  o2.keyframe_insert(data_path='location', frame=(0))
   o2.keyframe_insert(data_path='location', frame=(beginframe))
+ 
   
   for obj in bpy.context.selected_objects:
-     obj.keyframe_insert(data_path='rotation_euler', frame=(0))
      obj.keyframe_insert(data_path='rotation_euler', frame=(beginframe))
-  newHeight = 30
-  o2.location = (0,0, 30)
+     obj.keyframe_insert(data_path='rotation_euler', frame=(beginframe + shiftframe2 + 20))
 
+  newHeight = 200
+  o2.location = (0,0, 200)
+  shiftframe2 += 3
        
   #for obj in bpy.context.selected_objects:
   o2.keyframe_insert(data_path='location', frame=(framenumber))
   #resetheight = 100 - height
   #o2.location = (0,0, resetheight)  
   o2.location = (0,0, height)
-    
-  beginframe += 3  
+  centralHeightArray.append(height)
+   
   for object in foo_objs:
     bpy.data.objects[object].select_set(False)
+    
+bpy.context.scene['CentralObjectArray'] = centralobjectarray
+bpy.context.scene['CentralHeightArray'] = centralHeightArray 
+print(errorfixer)
